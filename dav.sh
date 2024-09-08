@@ -4,9 +4,10 @@ PUID=${PUID:-"100"}
 PGID=${PGID:-"100"}
 usermod -u "$PUID" nginx
 groupmod -g "$PGID" nginx
+echo "load_module /usr/lib64/nginx/modules/ngx_http_dav_ext_module.so;" | cat - /etc/nginx/nginx.conf >> /tmp/nginx.conf; mv /tmp/nginx.conf /etc/nginx/nginx.conf
 
 DAV=$(printenv | grep ^DAV | grep -v ^DAV_root | sort)
-CONFFILE=/etc/nginx/http.d/default.conf
+CONFFILE=/etc/nginx/conf.d/default.conf
 truncate -s 0 $CONFFILE
 DAV_root_name=${DAV_root_name:-root}
 
@@ -25,6 +26,7 @@ echo "dav_ext_lock_zone zone=default:10m;
 server {
   listen 80 default_server;
   listen [::]:80 default_server;
+  http2 on;
   root /dav;
   index index.html index.htm;
   server_name _;
@@ -62,3 +64,4 @@ done
 echo "}" >>$CONFFILE
 
 nginx -T
+
